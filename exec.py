@@ -49,7 +49,6 @@ network = init_network()
 x = np.array([1.0, 0.5])
 y = forward(network, x)
 print(y)
-'''
 y1 = step_function(x)
 y2 = sigmoid(x)
 y3 = relu(x)
@@ -60,4 +59,3 @@ plt.plot(x,y2)
 plt.plot(x,y3)
 plt.ylim(-0.1, 1.1)
 plt.show()
-'''

@@ -1,17 +1,50 @@
 import sys, os
+import pickle
 import numpy as np
 import matplotlib.pylab as plt
 
+def sigmoid(x):
+    return 1 / (1 + np.exp(-x))
+
+def softmax(a):
+    c = np.max(a)
+    exp_a = np.exp(a - c)
+    sum_exp_a = np.sum(exp_a)
+    y = exp_a / sum_exp_a
+    return y
+
+def get_data():
+    (x_train, t_train), (x_test, t_test) = \
+            load_mnist(normalize=True, flatten=True, one_hot_label=False)
+    return x_test, t_test
+
+def init_network():
+    with open("./code_given/ch03/sample_weight.pkl", 'rb') as f:
+        network = pickle.load(f)
+    return network
+
+def predict(network, x):
+    W1,W2,W3 = network['W1'],network['W2'],network['W3']
+    b1,b2,b3 = network['b1'],network['b2'],network['b3']
+
+    a1 = np.dot(x, W1) + b1
+    z1 = sigmoid(a1)
+    a2 = np.dot(z1, W2) + b2
+    z2 = sigmoid(a2)
+    a3 = np.dot(z2, W3) + b3
+    y  = softmax(a3)
+    return y
+
 if __name__ == '__main__':
-    sys.path.append(os.path.curdir + '\\code_given')
+    sys.path.append(os.path.curdir + '/code_given')
     from dataset.mnist import load_mnist
-    #print(sys.path)
-    (x_train, t_train), (x_test, t_test) = load_mnist(normalize=False, flatten=True)
+    x_set, t_set = get_data()
+    network = init_network()
 
-    img = x_train[0]
-    label = t_train[0]
-    print(label)
-
-    img = img.reshape(28, 28)
-    plt.imshow(img)
-    plt.show()
+    accuracy_cnt = 0
+    for (x,t) in zip(x_set, t_set):
+        y = predict(network, x)
+        p = np.argmax(y)
+        if p == t:
+            accuracy_cnt += 1
+    print("Accuracy:" + str(float(accuracy_cnt) / len(x_set)))
