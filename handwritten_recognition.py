@@ -35,16 +35,31 @@ def predict(network, x):
     y  = softmax(a3)
     return y
 
-if __name__ == '__main__':
-    sys.path.append(os.path.curdir + '/code_given')
-    from dataset.mnist import load_mnist
-    x_set, t_set = get_data()
-    network = init_network()
-
-    accuracy_cnt = 0
+def forward(network, x_set, t_set, acc_cnt):
     for (x,t) in zip(x_set, t_set):
         y = predict(network, x)
         p = np.argmax(y)
         if p == t:
-            accuracy_cnt += 1
+            acc_cnt += 1
+    return acc_cnt
+
+def forward_batch(network, x_set, t_set, acc_cnt, bat_size):
+    for i in range(0, len(x_set), bat_size):
+        x_batch = x_set[i:i+bat_size]
+        y_batch = predict(network, x_batch)
+        p = np.argmax(y_batch, axis=1)
+        acc_cnt += np.sum(p == t_set[i:i+bat_size])
+    return acc_cnt
+
+if __name__ == '__main__':
+    sys.path.append(os.path.curdir + '/code_given')
+    from dataset.mnist import load_mnist
+
+    accuracy_cnt = 0
+    batch_size = 100
+    x_set, t_set = get_data()
+    network = init_network()
+    #accuracy_cnt = forward(network, x_set, t_set, accuracy_cnt)
+    accuracy_cnt = forward_batch(network, x_set, t_set, accuracy_cnt, batch_size)
+
     print("Accuracy:" + str(float(accuracy_cnt) / len(x_set)))
